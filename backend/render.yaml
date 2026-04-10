@@ -1,0 +1,54 @@
+services:
+  - type: web
+    name: voicemart-api
+    env: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt && python -m spacy download en_core_web_sm
+    startCommand: gunicorn run:app
+    autoDeploy: true
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: USE_SQLITE
+        value: false
+      - key: FRONTEND_ORIGIN
+        sync: false
+      - key: PUBLIC_APP_URL
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: EMAIL_NOTIFICATIONS_ENABLED
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USERNAME
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_USE_TLS
+        sync: false
+      - key: SMTP_USE_SSL
+        sync: false
+      - key: MAIL_FROM_ADDRESS
+        sync: false
+      - key: MAIL_FROM_NAME
+        sync: false
+      - key: EMAIL_SEND_TIMEOUT
+        sync: false
+      - key: REGISTRATION_OTP_EXPIRY_MINUTES
+        sync: false
+      - key: REGISTRATION_OTP_MAX_ATTEMPTS
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: voicemart-db
+          property: connectionString
+
+databases:
+  - name: voicemart-db
+    plan: free
