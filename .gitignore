@@ -1,0 +1,17 @@
+# Next.js build output - NEVER push this
+frontend/.next/
+frontend/node_modules/
+frontend/.env.local
+
+# Python
+backend/__pycache__/
+backend/*.pyc
+backend/.venv/
+backend/venv/
+backend/instance/
+backend/.env
+
+# General
+.vscode/
+.DS_Store
+*.log
