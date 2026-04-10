@@ -1,11 +1,11 @@
 services:
   - type: web
     name: voicemart-api
-    env: python
+    runtime: python
     plan: free
     rootDir: backend
     buildCommand: pip install -r requirements.txt && python -m spacy download en_core_web_sm
-    startCommand: gunicorn run:app
+    startCommand: gunicorn --bind 0.0.0.0:$PORT run:app
     autoDeploy: true
     envVars:
       - key: FLASK_ENV
