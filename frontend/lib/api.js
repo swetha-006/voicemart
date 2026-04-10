@@ -5,9 +5,23 @@ import axios from "axios";
 import useAuthStore from "@/store/authStore";
 
 
+const REMOTE_API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001").replace(
+  /\/+$/,
+  ""
+);
+const USE_API_PROXY =
+  process.env.NODE_ENV === "production" &&
+  /^https?:\/\//.test(REMOTE_API_URL) &&
+  !/localhost|127\.0\.0\.1/i.test(REMOTE_API_URL);
+const API_BASE_URL = USE_API_PROXY ? "/api/proxy" : REMOTE_API_URL;
+const API_TIMEOUT_MS = Number(
+  process.env.NEXT_PUBLIC_API_TIMEOUT_MS || (USE_API_PROXY ? 65000 : 10000)
+);
+
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001",
-  timeout: 10000,
+  baseURL: API_BASE_URL,
+  timeout: Number.isFinite(API_TIMEOUT_MS) ? API_TIMEOUT_MS : 10000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -23,12 +37,39 @@ api.interceptors.request.use((config) => {
 });
 
 
+const wait = (duration) => new Promise((resolve) => window.setTimeout(resolve, duration));
+
+const shouldRetryRequest = (error) => {
+  const method = error?.config?.method?.toLowerCase();
+  if (!method || !["get", "head", "options"].includes(method)) {
+    return false;
+  }
+
+  if (error?.config?._voicemartRetried) {
+    return false;
+  }
+
+  if (error?.code === "ERR_NETWORK" || error?.code === "ECONNABORTED") {
+    return true;
+  }
+
+  return [502, 503, 504].includes(error?.response?.status);
+};
+
+
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     if (typeof window !== "undefined" && error?.response?.status === 401) {
       window.dispatchEvent(new CustomEvent("voicemart:unauthorized"));
     }
+
+    if (typeof window !== "undefined" && shouldRetryRequest(error)) {
+      error.config._voicemartRetried = true;
+      await wait(1800);
+      return api.request(error.config);
+    }
+
     return Promise.reject(error);
   }
 );
@@ -122,13 +163,13 @@ export const voiceApi = {
 
 export const getApiErrorMessage = (error) =>
   (error?.code === "ERR_NETWORK"
-    ? "Cannot reach the VoiceMart API. Start the Flask backend and verify NEXT_PUBLIC_API_URL."
+    ? "VoiceMart could not reach the API. If the backend is waking up on Render, wait a minute and retry."
     : null) ||
   (error?.code === "ECONNREFUSED"
-    ? "Cannot reach the VoiceMart API. Start the Flask backend and verify NEXT_PUBLIC_API_URL."
+    ? "VoiceMart could not reach the API. Verify the deployed backend URL and try again."
     : null) ||
   (error?.code === "ECONNABORTED"
-    ? "The request timed out while waiting for the VoiceMart API."
+    ? "The API took too long to respond. On Render free tier this usually means the service is still waking up."
     : null) ||
   flattenApiErrors(error?.response?.data?.errors) ||
   error?.response?.data?.message ||
