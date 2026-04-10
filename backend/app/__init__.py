@@ -13,6 +13,7 @@ from app.routes.admin import admin_bp
 from app.routes.auth import auth_bp
 from app.routes.customer import customer_bp
 from app.routes.voice import voice_bp
+from app.services.bootstrap_service import ensure_bootstrap_data
 from app.services.inventory_service import register_inventory_jobs, scan_low_stock_products
 from app.utils.response import error_response, success_response
 from config import CONFIG_MAP
@@ -42,6 +43,8 @@ def create_app(config_name=None):
         from app.models import Alert, CartItem, Category, Notification, Order, OrderItem, Product, User  # noqa: F401
 
         db.create_all()
+        if app.config.get("AUTO_SEED_ON_STARTUP", True):
+            ensure_bootstrap_data(log=app.logger)
         scan_low_stock_products()
 
     configure_scheduler(app)

@@ -78,6 +78,7 @@ class BaseConfig:
     EMAIL_SEND_TIMEOUT = int(os.getenv("EMAIL_SEND_TIMEOUT", "15"))
     REGISTRATION_OTP_EXPIRY_MINUTES = int(os.getenv("REGISTRATION_OTP_EXPIRY_MINUTES", "10"))
     REGISTRATION_OTP_MAX_ATTEMPTS = int(os.getenv("REGISTRATION_OTP_MAX_ATTEMPTS", "5"))
+    AUTO_SEED_ON_STARTUP = os.getenv("AUTO_SEED_ON_STARTUP", "true").strip().lower() == "true"
 
 
 class DevelopmentConfig(BaseConfig):
