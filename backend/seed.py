@@ -1,3 +1,5 @@
+import os
+
 from app import create_app
 from app.extensions import bcrypt, db
 from app.models import Category, Product, User
@@ -85,7 +87,7 @@ SEED_PRODUCTS = [
 
 
 def seed_database():
-    app = create_app("development")
+    app = create_app(os.getenv("FLASK_ENV", "development"))
     with app.app_context():
         db.create_all()
 
