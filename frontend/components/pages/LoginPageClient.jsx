@@ -21,7 +21,8 @@ export default function LoginPageClient() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.push(searchParams.get("next") || "/");
+      router.replace(searchParams.get("next") || "/");
+      router.refresh();
     }
   }, [isAuthenticated, router, searchParams]);
 
@@ -34,7 +35,9 @@ export default function LoginPageClient() {
       const payload = await authApi.login(form);
       setAuth(payload.data);
       await speakText("Login successful. Welcome back to VoiceMart.");
-      router.push(searchParams.get("next") || "/");
+      const destination = searchParams.get("next") || "/";
+      router.replace(destination);
+      router.refresh();
     } catch (requestError) {
       const message = getApiErrorMessage(requestError);
       setError(message);

@@ -56,7 +56,8 @@ export default function RegisterPage() {
         });
         setAuth(payload.data);
         await speakText("Registration successful. Welcome to VoiceMart.");
-        router.push("/");
+        router.replace("/");
+        router.refresh();
       }
     } catch (requestError) {
       const message = getApiErrorMessage(requestError);

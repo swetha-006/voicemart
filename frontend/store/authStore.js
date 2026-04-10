@@ -81,7 +81,7 @@ const useAuthStore = create(
       isHydrated: false,
       setAuth: ({ token, user }) => {
         syncCookies(token, user);
-        set({ token, user, isAuthenticated: Boolean(token) });
+        set({ token, user, isAuthenticated: Boolean(token), isHydrated: true });
         scheduleAutoLogout(token, get().logout);
       },
       hydrateAuth: () => {
@@ -129,6 +129,9 @@ const useAuthStore = create(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
+      onRehydrateStorage: () => (state) => {
+        state?.hydrateAuth();
+      },
     }
   )
 );

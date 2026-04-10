@@ -25,7 +25,6 @@ export default function ClientShell({ children }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const hydrateAuth = useAuthStore((state) => state.hydrateAuth);
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -36,8 +35,10 @@ export default function ClientShell({ children }) {
   const resetNotifications = useNotificationStore((state) => state.resetNotifications);
 
   useEffect(() => {
-    hydrateAuth();
-  }, [hydrateAuth]);
+    if (!useAuthStore.persist.hasHydrated()) {
+      useAuthStore.persist.rehydrate();
+    }
+  }, []);
 
   useEffect(() => {
     if (!isHydrated) {
